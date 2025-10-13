@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header class="header"></header>
+
+      <!-- Main Content -->
+      <main class="main">
+        <div class="hero">
+          <h1 class="hero-title">
+            <span class="title-main">PASSWORD</span>
+            <span class="title-sub">STRENGTH CHECKER</span>
+          </h1>
+        </div>
+
+        <div class="password-analyzer">
+          <div class="analyzer-container">
+            <div class="input-section">
+              <div class="input-group">
+                <input
+                  type="password"
+                  id="passwordInput"
+                  placeholder="Nhập mật khẩu cần phân tích..."
+                  class="password-input"
+                />
+                <button
+                  type="button"
+                  id="togglePassword"
+                  class="toggle-password"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick Analysis Results -->
+            <div
+              class="quick-analysis"
+              id="quickAnalysis"
+              style="display: none"
+            >
+              <!-- Strength Meter -->
+              <div class="strength-meter">
+                <div class="meter-header">
+                  <h3>ĐỘ MẠNH MẬT KHẨU</h3>
+                  <div class="entropy-display" id="entropyDisplay">0 bits</div>
+                </div>
+                <div class="meter-bar">
+                  <div class="meter-fill" id="meterFill"></div>
+                </div>
+                <div class="strength-label" id="strengthLabel">
+                  Nhập mật khẩu
+                </div>
+              </div>
+
+              <!-- Crack Time -->
+              <div class="crack-time">
+                <div class="time-header">
+                  <i class="fas fa-clock"></i>
+                  <span>THỜI GIAN CRACK</span>
+                </div>
+                <div class="time-value" id="crackTimeValue">-</div>
+              </div>
+
+              <!-- Detail Button -->
+              <button class="detail-btn" id="detailBtn">
+                <i class="fas fa-info-circle"></i>
+                XEM CHI TIẾT
+              </button>
+            </div>
+
+
+            <!-- Detail Modal -->
+            <div class="modal-overlay" id="modalOverlay" style="display: none">
+              <button class="close-btn" id="closeBtn">
+                <i class="fas fa-times"></i>
+              </button>
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h2>PHÂN TÍCH CHI TIẾT MẬT KHẨU</h2>
+                </div>
+                
+                <div class="modal-body">
+                  <!-- Character Analysis -->
+                  <div class="character-analysis">
+                    <h3>PHÂN TÍCH KÝ TỰ</h3>
+                    <div class="char-grid">
+                      <div class="char-item" id="lengthItem">
+                        <div class="char-icon">
+                          <i class="fas fa-ruler"></i>
+                        </div>
+                        <div class="char-info">
+                          <span class="char-label">Độ dài</span>
+                          <span class="char-value" id="lengthValue">0</span>
+                        </div>
+                      </div>
+                      <div class="char-item" id="lowercaseItem">
+                        <div class="char-icon">
+                          <i class="fas fa-font"></i>
+                        </div>
+                        <div class="char-info">
+                          <span class="char-label">Chữ thường</span>
+                          <span class="char-value" id="lowercaseValue">0</span>
+                        </div>
+                      </div>
+                      <div class="char-item" id="uppercaseItem">
+                        <div class="char-icon">
+                          <i class="fas fa-text-height"></i>
+                        </div>
+                        <div class="char-info">
+                          <span class="char-label">Chữ hoa</span>
+                          <span class="char-value" id="uppercaseValue">0</span>
+                        </div>
+                      </div>
+                      <div class="char-item" id="numbersItem">
+                        <div class="char-icon">
+                          <i class="fas fa-hashtag"></i>
+                        </div>
+                        <div class="char-info">
+                          <span class="char-label">Số</span>
+                          <span class="char-value" id="numbersValue">0</span>
+                        </div>
+                      </div>
+                      <div class="char-item" id="symbolsItem">
+                        <div class="char-icon">
+                          <i class="fas fa-exclamation"></i>
+                        </div>
+                        <div class="char-info">
+                          <span class="char-label">Ký tự đặc biệt</span>
+                          <span class="char-value" id="symbolsValue">0</span>
+                        </div>
+                      </div>
+                      <div class="char-item" id="uniqueItem">
+                        <div class="char-icon">
+                          <i class="fas fa-fingerprint"></i>
+                        </div>
+                        <div class="char-info">
+                          <span class="char-label">Ký tự duy nhất</span>
+                          <span class="char-value" id="uniqueValue">0</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Security Analysis -->
+                  <div class="security-analysis">
+                    <h3>PHÂN TÍCH BẢO MẬT</h3>
+                    <div class="security-grid">
+                      <div class="security-item" id="breachItem">
+                        <div class="security-icon">
+                          <i class="fas fa-shield-check"></i>
+                        </div>
+                        <div class="security-info">
+                          <span class="security-label">Kiểm tra rò rỉ</span>
+                          <span class="security-value" id="breachValue"
+                            >Đang kiểm tra...</span
+                          >
+                        </div>
+                      </div>
+                      <div class="security-item" id="patternItem">
+                        <div class="security-icon">
+                          <i class="fas fa-search"></i>
+                        </div>
+                        <div class="security-info">
+                          <span class="security-label">Pattern dễ đoán</span>
+                          <span class="security-value" id="patternValue"
+                            >Đang phân tích...</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Recommendations -->
+                  <div class="recommendations" id="recommendations">
+                    <h3>KHUYẾN NGHỊ CẢI THIỆN</h3>
+                    <ul class="recommendation-list" id="recommendationList">
+                      <!-- Recommendations will be populated by JavaScript -->
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- History Section - Outside analyzer -->
+          <div class="history-section" id="historySection">
+            <h3>LỊCH SỬ PHÂN TÍCH</h3>
+            <div class="history-controls">
+              <button class="clear-history-btn" id="clearHistoryBtn">
+                <i class="fas fa-trash"></i>
+                XÓA LỊCH SỬ
+              </button>
+              <div class="history-count" id="historyCount">
+                Tổng: 0 mật khẩu
+              </div>
+            </div>
+            
+            <div class="history-list" id="historyList">
+              <!-- History items will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- AI Chat Section - Floating -->
+      <div class="ai-chat-section" id="aiChatSection">
+        <div class="chat-header">
+          <h3>
+            <i class="fas fa-robot"></i>
+            HỖ TRỢ
+          </h3>
+          <button class="chat-toggle-btn" id="chatToggleBtn">
+            <i class="fas fa-comments"></i>
+          </button>
+        </div>
+        
+        <div class="chat-container" id="chatContainer" style="display: none;">
+          <div class="chat-messages" id="chatMessages">
+            <div class="chat-message ai-message">
+              <div class="message-avatar">
+                <i class="fas fa-robot"></i>
+              </div>
+              <div class="message-content">
+                <p>Xin chào! Tôi là AI chuyên gia bảo mật mật khẩu. Tôi có thể giúp bạn:</p>
+                <ul>
+                  <li>Phân tích mật khẩu hiện tại</li>
+                  <li>Tư vấn cách tạo mật khẩu mạnh</li>
+                  <li>Giải thích các khái niệm bảo mật</li>
+                  <li>Trả lời câu hỏi về bảo mật</li>
+                </ul>
+                <p>Hãy hỏi tôi bất cứ điều gì về mật khẩu!</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="chat-input-container">
+            <div class="chat-input-group">
+              <input 
+                type="text" 
+                id="chatInput" 
+                placeholder="Nhập câu hỏi về bảo mật mật khẩu..." 
+                class="chat-input"
+              />
+              <button id="sendChatBtn" class="send-chat-btn">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
+            <div class="chat-quick-actions">
+              <button class="quick-action-btn" data-message="Tạo mật khẩu mạnh cho tôi">
+                <i class="fas fa-key"></i> Tạo mật khẩu
+              </button>
+              <button class="quick-action-btn" data-message="Tại sao mật khẩu của tôi yếu?">
+                <i class="fas fa-question"></i> Tại sao yếu?
+              </button>
+              <button class="quick-action-btn" data-message="Làm thế nào để nhớ mật khẩu mạnh?">
+                <i class="fas fa-brain"></i> Cách nhớ
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="footer-content">
+          <div class="footer-left">
+            <div class="footer-logo">
+              <i class="fas fa-shield-virus"></i>
+              <span>PASSWORD CHECKER</span>
+            </div>
+            <p>Nhóm_</p>
+            <b class="api-info">
+              <br>2287700083_Phan Đức Thắng </br>
+              <br>2287700001_Bùi Quốc An</br>      
+              <br>2287700046_Vũ Tùng Lâm</br>    
+              <br>2287700077_Lê Hoàng Thái </br>      
+            </b>
+          </div>
+          <div class="footer-right">
+            <div class="footer-info">
+              <span>An toàn thông tin</span>
+              <span>•</span>
+              <span>Class 22DATA1</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  </body>
+</html>
