@@ -1200,17 +1200,106 @@ body {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 350px;
+  width: 85px;
   max-width: 90vw;
   background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
   border: 2px solid #ff0000;
   border-radius: 15px;
   padding: 0;
-  box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(10px);
   z-index: 1000;
   transition: all 0.3s ease;
   animation: slideInUp 0.5s ease;
+  overflow: hidden; /* tránh rò rỉ hiệu ứng tạo vệt dưới */
+}
+
+/* Compact mode for a subtler, more minimal look */
+.ai-chat-section.compact {
+  width: 300px;
+  border: 1px solid #2e2e2e;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  background: rgba(20, 20, 20, 0.9);
+}
+
+.ai-chat-section.compact .chat-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid #2e2e2e;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.ai-chat-section.compact .chat-header h3 {
+  font-size: 16px;
+  text-shadow: none;
+  color: #ddd;
+}
+
+.ai-chat-section.compact .chat-header h3 i {
+  color: #bbb;
+}
+
+.ai-chat-section.compact .chat-toggle-btn {
+  width: 36px;
+  height: 36px;
+  font-size: 14px;
+  box-shadow: none;
+  background: #2a2a2a;
+}
+
+.ai-chat-section.compact .chat-toggle-btn::after {
+  display: none;
+}
+
+.ai-chat-section.compact .chat-container {
+  max-height: 320px;
+}
+
+.ai-chat-section.compact .chat-messages {
+  max-height: 180px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.ai-chat-section.compact .message-content {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.ai-chat-section.compact .ai-message .message-content {
+  background: rgba(255, 0, 0, 0.06);
+  border-color: rgba(255, 0, 0, 0.18);
+}
+
+.ai-chat-section.compact .user-message .message-content {
+  background: rgba(0, 255, 0, 0.06);
+  border-color: rgba(0, 255, 0, 0.18);
+}
+
+.ai-chat-section.compact .chat-input-container {
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.ai-chat-section.compact .chat-input {
+  border-radius: 18px;
+  font-size: 13px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.ai-chat-section.compact .send-chat-btn {
+  width: 36px;
+  height: 36px;
+  font-size: 13px;
+  box-shadow: none;
+  background: #2a2a2a;
+}
+
+.ai-chat-section.compact .quick-action-btn {
+  padding: 6px 10px;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 @keyframes slideInUp {
@@ -1225,8 +1314,8 @@ body {
 }
 
 .ai-chat-section:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(255, 0, 0, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
 }
 
 .chat-header {
@@ -1239,24 +1328,19 @@ body {
   background: rgba(0, 0, 0, 0.3);
 }
 
+/* remove header title spacing now that logo/title removed */
 .chat-header h3 {
-  font-family: "Orbitron", monospace;
-  font-size: 20px;
-  color: #ff0000;
-  text-shadow: 0 0 10px #ff0000;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display: none;
 }
 
 .chat-toggle-btn {
   background: linear-gradient(135deg, #ff0000, #cc0000);
   border: none;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  width: 42px;
+  height: 42px;
   color: white;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
@@ -1279,6 +1363,11 @@ body {
   border-radius: 50%;
   z-index: -1;
   animation: pulse 2s infinite;
+}
+
+/* Tắt vòng phát sáng để không tạo vệt đỏ dưới khung nhỏ */
+.ai-chat-section .chat-toggle-btn::after {
+  display: none;
 }
 
 @keyframes pulse {
@@ -1305,7 +1394,7 @@ body {
 
 .chat-messages {
   flex: 1;
-  max-height: 250px;
+  max-height: 200px;
   overflow-y: auto;
   padding: 15px;
   background: rgba(0, 0, 0, 0.3);
