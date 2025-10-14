@@ -1203,15 +1203,20 @@ body {
   width: 85px;
   max-width: 90vw;
   background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-  border: 2px solid #ff0000;
+  border: 1px solid #2e2e2e; /* dịu màu viền */
   border-radius: 15px;
   padding: 0;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(10px);
   z-index: 1000;
-  transition: all 0.3s ease;
+  transition: width 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
   animation: slideInUp 0.5s ease;
   overflow: hidden; /* tránh rò rỉ hiệu ứng tạo vệt dưới */
+}
+
+/* Mở rộng khi ở trạng thái mở */
+.ai-chat-section.open {
+  width: 300px;
 }
 
 /* Compact mode for a subtler, more minimal look */
@@ -1390,6 +1395,14 @@ body {
   display: flex;
   flex-direction: column;
   padding: 0;
+}
+
+/* Ẩn nội dung khi đóng, hiện khi mở */
+.ai-chat-section .chat-container {
+  display: none;
+}
+.ai-chat-section.open .chat-container {
+  display: flex;
 }
 
 .chat-messages {

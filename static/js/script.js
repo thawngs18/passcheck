@@ -898,10 +898,19 @@ class AIChat {
   }
 
   toggleChat() {
-    this.isOpen = !this.isOpen;
-    this.chatContainer.style.display = this.isOpen ? "flex" : "none";
+    const wrapper = document.getElementById("aiChatSection");
+    if (wrapper) {
+      this.isOpen = !this.isOpen;
+      wrapper.classList.toggle("open", this.isOpen);
+    } else {
+      this.isOpen = !this.isOpen;
+    }
 
-    if (this.isOpen) {
+    if (this.chatContainer) {
+      this.chatContainer.style.display = this.isOpen ? "flex" : "none";
+    }
+
+    if (this.isOpen && this.chatInput) {
       this.chatInput.focus();
       this.scrollToBottom();
     }
