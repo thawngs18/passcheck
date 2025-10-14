@@ -1216,7 +1216,7 @@ body {
 
 /* Mở rộng khi ở trạng thái mở */
 .ai-chat-section.open {
-  width: 300px;
+  width: 350px;
 }
 
 /* Compact mode for a subtler, more minimal look */
@@ -1391,7 +1391,7 @@ body {
 }
 
 .chat-container {
-  max-height: 400px;
+  max-height: 450px;
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -1407,7 +1407,7 @@ body {
 
 .chat-messages {
   flex: 1;
-  max-height: 200px;
+  max-height: 250px;
   overflow-y: auto;
   padding: 15px;
   background: rgba(0, 0, 0, 0.3);
