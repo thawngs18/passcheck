@@ -241,7 +241,8 @@ class FormulaPasswordChecker {
       hasSequential: this.hasSequentialPattern(password),
       hasKeyboard: this.hasKeyboardPattern(password),
       hasDate: this.hasDatePattern(password),
-      hasName: this.hasNamePattern(password),
+      // ❌ BỎ KIỂM TRA TÊN NGƯỜI
+      // hasName: this.hasNamePattern(password),
       hasRepeated: this.hasRepeatedPattern(password),
       isTooShort: password.length < 8,
       isVeryShort: password.length < 6,
@@ -328,15 +329,10 @@ class FormulaPasswordChecker {
     return datePatterns.some((pattern) => pattern.test(password));
   }
 
-  hasNamePattern(password) {
-    const namePatterns = [
-      /[A-Za-z]{2,4}/, // 2-4 letters
-      /^[A-Za-z]+$/, // Only letters
-      /\b[A-Z][a-z]+\b/, // Capitalized words
-    ];
-
-    return namePatterns.some((pattern) => pattern.test(password));
-  }
+  // ❌ BỎ HOÀN TOÀN FUNCTION hasNamePattern
+  // hasNamePattern(password) {
+  //   return false; // Không kiểm tra tên nữa
+  // }
 
   hasRepeatedPattern(password) {
     const repeatedPatterns = [
@@ -493,9 +489,10 @@ class FormulaPasswordChecker {
       recommendations.push("Tránh sử dụng ngày tháng trong mật khẩu");
     }
 
-    if (patternAnalysis.hasName) {
-      recommendations.push("Tránh sử dụng tên người trong mật khẩu");
-    }
+    // ❌ BỎ KHUYẾN NGHỊ VỀ TÊN NGƯỜI
+    // if (patternAnalysis.hasName) {
+    //   recommendations.push("Tránh sử dụng tên người trong mật khẩu");
+    // }
 
     if (patternAnalysis.hasRepeated) {
       recommendations.push("Tránh lặp lại ký tự hoặc pattern");
@@ -716,7 +713,7 @@ class FormulaPasswordChecker {
           <div class="history-password">${this.maskPassword(
             item.password
           )}</div>
-          <div class="history-time">${this.formatTime(item.timestamp)}</div>
+          <div class="history-time">${this.formatTimeAgo(item.timestamp)}</div>
         </div>
         <div class="history-strength">
           <div class="history-strength-bar">
@@ -758,7 +755,7 @@ class FormulaPasswordChecker {
     );
   }
 
-  formatTime(timestamp) {
+  formatTimeAgo(timestamp) {
     const date = new Date(timestamp);
     const now = new Date();
     const diff = now - date;
@@ -847,10 +844,11 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("Features:");
   console.log("- Shannon entropy calculation");
   console.log("- International standard algorithm");
-  console.log("- Pattern detection");
-  console.log("- Breach checking");
+  console.log("- Pattern detection (Sequential, Keyboard, Date, Repeated)");
+  console.log("- Breach checking via HaveIBeenPwned API");
   console.log("- Real-time analysis");
   console.log("- Password history tracking");
+  console.log("✅ Name pattern check DISABLED");
 });
 
 // Export for potential module use
@@ -870,7 +868,7 @@ class AIChat {
 
     this.isOpen = false;
     this.isTyping = false;
-    this.conciseMode = false; // rút gọn câu trả lời để tránh lan man
+    this.conciseMode = false; // AI đã trả lời ngắn gọn rồi
 
     this.init();
   }
@@ -950,11 +948,8 @@ class AIChat {
       this.hideTypingIndicator();
 
       if (data.success) {
-        // Add AI response to chat: tóm gọn nội dung thay vì giữ nguyên dòng
-        const content = this.conciseMode
-          ? this.summarizeResponse(data.response)
-          : data.response;
-        this.addMessage(content, "ai");
+        // Add AI response to chat (AI đã trả lời ngắn gọn từ backend)
+        this.addMessage(data.response, "ai");
       } else {
         this.addMessage(`Xin lỗi, có lỗi xảy ra: ${data.error}`, "ai");
       }
@@ -968,66 +963,7 @@ class AIChat {
     }
   }
 
-  // Tóm tắt nội dung (heuristic) để giữ đúng ý mà vẫn ngắn
-  summarizeResponse(content) {
-    if (!content) return content;
-
-    const text = content.replace(/\r/g, "").trim();
-    const lines = text
-      .split(/\n+/)
-      .map((l) => l.trim())
-      .filter(Boolean);
-
-    // 1) Lấy các ý chính: các bullet/khuyến nghị/hành động
-    const bulletRegex = /^(-|•|\d+\.|\*)\s+/;
-    const adviceRegex =
-      /(khuyên|nên|không nên|tránh|hãy|mẹo|cách|bước|lưu ý|quan trọng)/i;
-    const picked = [];
-    for (const l of lines) {
-      if (bulletRegex.test(l) || adviceRegex.test(l)) {
-        picked.push(l.replace(bulletRegex, "- "));
-      }
-      if (picked.length >= 4) break;
-    }
-
-    // 2) Nếu thiếu, chọn các câu cốt lõi có từ khoá
-    if (picked.length < 2) {
-      const sentences = lines
-        .join(" ")
-        .split(/(?<=[\.!?…。！？])\s+/)
-        .filter((s) => s && s.trim().length > 0);
-      const keywords =
-        /(mật khẩu|bảo mật|yếu|mạnh|entropy|rò rỉ|pattern|khuyến nghị|thay đổi|tăng|giảm|độ dài|ký tự)/i;
-      const core = [];
-      for (const s of sentences) {
-        if (keywords.test(s)) core.push(s.trim());
-        if (core.length >= 2) break;
-      }
-      if (core.length === 0 && sentences.length > 0) core.push(sentences[0]);
-      picked.push(...core);
-    }
-
-    // 3) Chuẩn hoá: tối đa 4 dòng bullet, mỗi dòng tối đa 120 ký tự
-    const normalized = picked.slice(0, 4).map((it) => {
-      const MAX = 120;
-      let s = it.replace(/\s{2,}/g, " ").trim();
-      if (!s.startsWith("- ")) s = "- " + s;
-      if (s.length > MAX) s = s.slice(0, MAX - 1).trimEnd() + "…";
-      return s;
-    });
-
-    // 4) Fallback: 1-2 câu đầu nếu không có bullet phù hợp
-    if (normalized.length === 0) {
-      const sentences = text
-        .split(/(?<=[\.!?…。！？])\s+/)
-        .filter((s) => s && s.trim().length > 0);
-      return sentences.slice(0, 2).join(" ");
-    }
-
-    return normalized.join("\n");
-  }
-
-  addMessage(content, sender, previewOptions) {
+  addMessage(content, sender) {
     const messageDiv = document.createElement("div");
     messageDiv.className = `chat-message ${sender}-message`;
 
@@ -1046,34 +982,6 @@ class AIChat {
 
     messageDiv.appendChild(avatar);
     messageDiv.appendChild(messageContent);
-
-    // Nếu có bản đầy đủ và đang rút gọn, thêm nút Xem thêm/Thu gọn
-    if (sender === "ai" && previewOptions && previewOptions.truncated) {
-      const toggle = document.createElement("button");
-      toggle.textContent = "Xem thêm";
-      toggle.style.marginTop = "6px";
-      toggle.style.background = "transparent";
-      toggle.style.border = "none";
-      toggle.style.color = "#ff6666";
-      toggle.style.cursor = "pointer";
-      toggle.style.fontWeight = "600";
-      toggle.addEventListener("click", () => {
-        const isExpanded = toggle.getAttribute("data-expanded") === "1";
-        if (isExpanded) {
-          messageContent.innerHTML = this.formatMessage(previewOptions.text);
-          toggle.textContent = "Xem thêm";
-          toggle.setAttribute("data-expanded", "0");
-        } else {
-          messageContent.innerHTML = this.formatMessage(previewOptions.full);
-          toggle.textContent = "Thu gọn";
-          toggle.setAttribute("data-expanded", "1");
-        }
-        this.scrollToBottom();
-      });
-      const wrapper = document.createElement("div");
-      wrapper.appendChild(toggle);
-      messageDiv.appendChild(wrapper);
-    }
 
     this.chatMessages.appendChild(messageDiv);
     this.scrollToBottom();
