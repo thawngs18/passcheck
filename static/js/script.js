@@ -116,7 +116,31 @@ class FormulaPasswordChecker {
 
       const analysis = await response.json();
 
-      // Store analysis data for modal
+      // Augment with local zxcvbn name-only detection so UI can reflect it
+      try {
+        const nameDetected = this.hasNameFromZxcvbn(password);
+        analysis.patternAnalysis = analysis.patternAnalysis || {};
+        if (nameDetected) {
+          analysis.patternAnalysis.hasNameZxcvbn = true;
+          // Ensure hasAnyPattern reflects the name detection
+          const values = Object.values(analysis.patternAnalysis);
+          analysis.patternAnalysis.hasAnyPattern = values.some(
+            (v) => v === true
+          );
+
+          // Add a recommendation if not already present
+          if (Array.isArray(analysis.recommendations)) {
+            const msg = "Tránh dùng tên người/họ trong mật khẩu";
+            if (!analysis.recommendations.includes(msg)) {
+              analysis.recommendations.push(msg);
+            }
+          }
+        }
+      } catch (_) {
+        // Non-fatal: keep original API analysis if zxcvbn not available
+      }
+
+      // Store analysis data for modal (already augmented with local name check)
       this.currentAnalysis = analysis;
 
       // Update quick analysis UI only
@@ -241,8 +265,8 @@ class FormulaPasswordChecker {
       hasSequential: this.hasSequentialPattern(password),
       hasKeyboard: this.hasKeyboardPattern(password),
       hasDate: this.hasDatePattern(password),
-      // ❌ BỎ KIỂM TRA TÊN NGƯỜI
-      // hasName: this.hasNamePattern(password),
+      // Name-only detection via zxcvbn dictionaries (male/female/surnames)
+      hasNameZxcvbn: this.hasNameFromZxcvbn(password),
       hasRepeated: this.hasRepeatedPattern(password),
       isTooShort: password.length < 8,
       isVeryShort: password.length < 6,
@@ -253,6 +277,51 @@ class FormulaPasswordChecker {
     );
 
     return patterns;
+  }
+
+  hasNameFromZxcvbn(password) {
+    try {
+      if (typeof zxcvbn !== "function") {
+        console.warn("zxcvbn not loaded: name detection disabled");
+        return false;
+      }
+      if (!password || password.length === 0) return false;
+
+      const nameDicts = new Set([
+        "male_names",
+        "female_names",
+        "surnames",
+        "names",
+      ]);
+
+      const containsName = (text) => {
+        const res = zxcvbn(text);
+        if (!res || !Array.isArray(res.sequence)) return false;
+        for (const m of res.sequence) {
+          if (
+            m &&
+            m.pattern === "dictionary" &&
+            m.dictionary_name &&
+            nameDicts.has(m.dictionary_name)
+          ) {
+            return true;
+          }
+        }
+        return false;
+      };
+
+      // Check full password
+      if (containsName(password)) return true;
+
+      // Also check alphabetic-only segments (e.g., "alex" in "alex123.alo")
+      const alphaSegments = password.match(/[A-Za-z]{3,}/g) || [];
+      for (const seg of alphaSegments) {
+        if (containsName(seg)) return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
   }
 
   isCommonPassword(password) {
@@ -489,10 +558,10 @@ class FormulaPasswordChecker {
       recommendations.push("Tránh sử dụng ngày tháng trong mật khẩu");
     }
 
-    // ❌ BỎ KHUYẾN NGHỊ VỀ TÊN NGƯỜI
-    // if (patternAnalysis.hasName) {
-    //   recommendations.push("Tránh sử dụng tên người trong mật khẩu");
-    // }
+    // Name-only check via zxcvbn
+    if (patternAnalysis.hasNameZxcvbn) {
+      recommendations.push("Tránh dùng tên người/họ trong mật khẩu");
+    }
 
     if (patternAnalysis.hasRepeated) {
       recommendations.push("Tránh lặp lại ký tự hoặc pattern");
@@ -848,7 +917,7 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("- Breach checking via HaveIBeenPwned API");
   console.log("- Real-time analysis");
   console.log("- Password history tracking");
-  console.log("✅ Name pattern check DISABLED");
+  console.log("✅ Name-only detection via zxcvbn ENABLED");
 });
 
 // Export for potential module use
