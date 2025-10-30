@@ -870,7 +870,7 @@ class AIChat {
 
     this.isOpen = false;
     this.isTyping = false;
-    this.conciseMode = true; // rút gọn câu trả lời để tránh lan man
+    this.conciseMode = false; // rút gọn câu trả lời để tránh lan man
 
     this.init();
   }
